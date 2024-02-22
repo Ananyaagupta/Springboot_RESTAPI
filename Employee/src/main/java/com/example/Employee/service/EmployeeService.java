@@ -28,4 +28,12 @@ public class EmployeeService {
         }
 
     }
+
+    public boolean addEmployee(Integer id,String name,long salary,String address){
+        Employees employees = new Employees(id,name,salary,address);
+        employeeRepository.save(employees);
+        return true;
+    }
+
+
 }
