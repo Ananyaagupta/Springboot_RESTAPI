@@ -1,51 +1,57 @@
 package com.example.Employee.service;
 
+import com.example.Employee.dao.EmployeeDao;
+import com.example.Employee.exception.ResourceNotFoundException;
 import com.example.Employee.model.Employees;
-import com.example.Employee.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
-    @Autowired
-    private EmployeeRepository employeeRepository;
 
-    public List<Employees> getAllEmployees() {
-        return employeeRepository.findAll();
+    @Autowired
+    private EmployeeDao employeeDao;
+
+    public List<Employees> listAllEmployees() {
+        try {
+            return employeeDao.getAllEmployees();
+        } catch (Exception e){
+            throw new RuntimeException("Error occurred while fetching employees " + e);
+        }
     }
 
-   public Optional<Employees> getEmployeesById(int id){
-       return employeeRepository.findById(id);
+   public Employees getEmployeesById(int id){
+       try {
+           return employeeDao.findEmployeeById(id).orElseThrow(() -> new ResourceNotFoundException("this message is from service layer Employee with ID " + id + " not found"));
+       } catch (Exception e) {
+           throw new RuntimeException("Error occurred while fetching employee with ID " + id, e);
+       }
    }
 
-    public boolean deleteThisEmployees(Integer id){
-        Optional<Employees> optionalEmployee = employeeRepository.findById(id);
-        if (optionalEmployee.isPresent()) {
-            employeeRepository.delete(optionalEmployee.get());
-            return true; // Deletion successful
-        } else {
-            return false; // Employee with the given ID not found
+    public void deleteThisEmployeeById(Integer id) throws ResourceNotFoundException {
+        Optional<Employees> optionalEmployee = employeeDao.findEmployeeById(id);
+        Employees employee = optionalEmployee.orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + id + " not found"));
+        try {
+            employeeDao.deleteEmployee(employee);
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while deleting employee with ID " + id, e);
         }
-
     }
+
 
     public boolean addEmployee(Integer id, String name, long salary, String address, Date dob){
         Employees employees = new Employees(id,name,salary,address,dob);
-        employeeRepository.save(employees);
-        return true;
+       return employeeDao.saveNewEmployee(employees);
+
     }
 
     public List<Employees> listOfRichByAvg(){
-        List<Employees> allEmployees = employeeRepository.findAll();
-        double averageSalary =  allEmployees.stream().mapToDouble(Employees::getEmpSalary).average().orElse(0); //e->e.getEmpSalary() is Employees::getEmpSalary
-        return allEmployees.stream().filter(e->e.getEmpSalary() > averageSalary).collect(Collectors.toList());
+       return employeeDao.getListOfRichByAvg();
     }
 
     public static int calculateAge(LocalDate dob) {
@@ -55,7 +61,7 @@ public class EmployeeService {
     }
 
     public List<Employees> listOfRichByAge(){
-        List<Employees> allEmployees = employeeRepository.findAll();
-        return allEmployees.stream().filter(e->e.getEmpSalary()>20000 && calculateAge(e.getDob().toLocalDate())>25 && calculateAge(e.getDob().toLocalDate())<35 ).collect(Collectors.toList());
+        return employeeDao.getRichByAge();
     }
+
 }
