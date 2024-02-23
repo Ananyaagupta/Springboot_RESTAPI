@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,8 +33,8 @@ public class EmployeeController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> addEmployee(@RequestParam Integer id, @RequestParam String name, @RequestParam long salary, @RequestParam String address) {
-        if (employeeService.addEmployee(id,name,salary,address)) {
+    public ResponseEntity<String> addEmployee(@RequestParam Integer id, @RequestParam String name, @RequestParam long salary, @RequestParam String address, @RequestParam Date dob) {
+        if (employeeService.addEmployee(id,name,salary,address,dob)) {
             return ResponseEntity.ok("Employee with ID " + id + " added successfully");
 
         }
@@ -41,14 +42,19 @@ public class EmployeeController {
     }
 
     @GetMapping("/fetchById/{id}")
-    public Optional<Employees> fetchEmployeesById(int id) {
-        return employeeService.getAllEmployeesById(id);
+    public ResponseEntity<Optional<Employees>> fetchEmployeesById(int id) {
+        return new ResponseEntity<>(employeeService.getEmployeesById(id), HttpStatus.OK);
     }
 
-    @GetMapping("/richierich")
+    @GetMapping("/richieRich")
     public ResponseEntity<List<Employees>> richFolks() {
-        List<Employees> richEmployees = employeeService.listOfRichByAvg();
-        return new ResponseEntity<>(richEmployees, HttpStatus.OK);
+        return new ResponseEntity<>(employeeService.listOfRichByAvg(), HttpStatus.OK);
+    }
+
+    @GetMapping("/youngHighSalary")
+    public ResponseEntity<List<Employees>> youngRichFolks(){
+        return new ResponseEntity<>(employeeService.listOfRichByAge(), HttpStatus.OK);
+
     }
 
 }

@@ -4,6 +4,10 @@ import com.example.Employee.model.Employees;
 import com.example.Employee.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,7 +21,7 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
-   public Optional<Employees> getAllEmployeesById(int id){
+   public Optional<Employees> getEmployeesById(int id){
        return employeeRepository.findById(id);
    }
 
@@ -32,8 +36,8 @@ public class EmployeeService {
 
     }
 
-    public boolean addEmployee(Integer id,String name,long salary,String address){
-        Employees employees = new Employees(id,name,salary,address);
+    public boolean addEmployee(Integer id, String name, long salary, String address, Date dob){
+        Employees employees = new Employees(id,name,salary,address,dob);
         employeeRepository.save(employees);
         return true;
     }
@@ -44,4 +48,14 @@ public class EmployeeService {
         return allEmployees.stream().filter(e->e.getEmpSalary() > averageSalary).collect(Collectors.toList());
     }
 
+    public static int calculateAge(LocalDate dob) {
+        LocalDate currentDate = LocalDate.now();
+        Period period = Period.between(dob, currentDate);
+        return period.getYears();
+    }
+
+    public List<Employees> listOfRichByAge(){
+        List<Employees> allEmployees = employeeRepository.findAll();
+        return allEmployees.stream().filter(e->e.getEmpSalary()>20000 && calculateAge(e.getDob().toLocalDate())>25 && calculateAge(e.getDob().toLocalDate())<35 ).collect(Collectors.toList());
+    }
 }

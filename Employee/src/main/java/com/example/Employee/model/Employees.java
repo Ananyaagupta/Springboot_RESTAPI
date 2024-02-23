@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
+
 
 @Setter
 @Getter
@@ -23,5 +25,7 @@ public class Employees {
     private long empSalary;
     @Column(name = "address")
     private String empAddress;
+    @Column(name="dob")
+    private Date dob;
 
 }
